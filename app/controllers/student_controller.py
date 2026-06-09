@@ -31,6 +31,11 @@ def _validate_student_payload(data, student_id=None):
         if q.first():
             errors.append("Email address already exists.")
 
+    
+    return errors  
+
+
+def create_student():
     dateofbirth = data.get("date_of_birth")
     todaydate = datetime.today()
     
@@ -44,10 +49,6 @@ def _validate_student_payload(data, student_id=None):
         except ValueError:
             errors.append("Date of birth must be in YYYY-MM-DD format.")
 
-    return errors  
-
-
-def create_student():
     data = request.get_json(silent=True)
     if not data:
         return jsonify({"error": "Request body is required."}), 400
@@ -83,6 +84,19 @@ def get_student(student_id):
 
 
 def update_student(student_id):
+    dateofbirth = data.get("date_of_birth")
+    todaydate = datetime.today()
+    
+    if dateofbirth is None or str(dateofbirth).strip() == "":
+        errors.append("Date of birth is required.")
+    else:
+        try:
+            dob = datetime.strptime(str(dateofbirth).strip(), "%Y-%m-%d")
+            if dob >= todaydate:
+                errors.append("Date of birth cannot be in the future.")
+        except ValueError:
+            errors.append("Date of birth must be in YYYY-MM-DD format.")
+
     student = Student.query.get(student_id)
     if not student:
         return jsonify({"error": "Student not found."}), 404
